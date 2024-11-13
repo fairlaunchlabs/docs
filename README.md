@@ -290,15 +290,15 @@ If the `T` is an integer multiple of the `M`, no adjustments are needed as descr
 `T` and `M` are decreasing exponentially with each `Era`, but the ratio between the two remains constant, regardless of the `Era`.
 
 ```math
-\because T=T_0*f^{e-1}
+T=T_0*f^{e-1}
 ```
 
 ```math
-\because M = \frac{M_b}{d}=\frac{M_0 * f^{e-1}}{d}
+M = \frac{M_b}{d}=\frac{M_0 * f^{e-1}}{d}
 ```
 
 ```math
-\therefore \frac{T}{M} = \frac{T_0}{M_0} * d
+\frac{T}{M} = \frac{T_0}{M_0} * d
 ```
 
 #### 3.2.4
