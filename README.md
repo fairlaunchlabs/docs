@@ -373,37 +373,19 @@ Conversely, if the interval time is shorter, it indicates that completing an `Ep
 
 ```rust
 fn get_mint_size(config_data: &ConfigData, era: u32, elapsed_seconds_epoch: i64, previous_difficulty_coefficient: f64, target_mint_size_epoch: f64) -> (f64, f64) {
-  let _difficulty_coefficient = if 2 * config_data.target_seconds_per_epoch > elapsed_seconds_epoch as u64 {
-      let coefficient = previous_difficulty_coefficient * (2.0 - (elapsed_seconds_epoch as f64) / config_data.target_seconds_per_epoch as f64);
-      coefficient
+  let delta_difficulty_coefficient = if (elapsed_seconds_epoch as f64) < (config_data.target_seconds_per_epoch as f64) {
+    (1.0 - (elapsed_seconds_epoch as f64) / (config_data.target_seconds_per_epoch as f64)) / 100.0
   } else {
-      MIN_DIFFICULTY_COEFFICIENT
+    0.0
   };
 
-  let difficulty_coefficient = if _difficulty_coefficient < MIN_DIFFICULTY_COEFFICIENT {
-      MIN_DIFFICULTY_COEFFICIENT
-  } else {
-      _difficulty_coefficient
-  };
+  let mut difficulty_coefficient = previous_difficulty_coefficient * (1.0 + delta_difficulty_coefficient);
+  let base_mint_size = config_data.initial_mint_size * config_data.reduce_ratio.powf((era - 1) as f64);
 
-  let reduce_power = config_data.reduce_ratio.powf((era - 1) as f64);
-
-  let mut mint_size = config_data.initial_mint_size * reduce_power / difficulty_coefficient;
+  let mut mint_size =  base_mint_size / difficulty_coefficient;
   if target_mint_size_epoch % mint_size > 0.0 {
     mint_size = target_mint_size_epoch / ((target_mint_size_epoch / mint_size).trunc() + 1.0);
-  }
-
-  if mint_size > target_mint_size_epoch {
-      mint_size = target_mint_size_epoch;
-      let mut new_difficulty_coefficient = config_data.initial_mint_size * reduce_power / mint_size;
-
-      new_difficulty_coefficient = if new_difficulty_coefficient < MIN_DIFFICULTY_COEFFICIENT {
-          MIN_DIFFICULTY_COEFFICIENT
-      } else {
-          new_difficulty_coefficient
-      };
-
-      return (mint_size, new_difficulty_coefficient);
+    difficulty_coefficient = base_mint_size / mint_size;
   }
 
   (mint_size, difficulty_coefficient)
