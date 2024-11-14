@@ -428,20 +428,26 @@ There are four parameters that determine the total supply:
 
 *   $E$: `Total Eras`
 *   $C$: `Epoches per Era`
-*   $S$: `Initial target mint size per epoch`
-*   $R$: `Reduce factory by era`
+*   $T_0$: `Initial target mint size per epoch`
+*   $f$: `Reduce factory by era`
 
 **Calculation**
 
 ```math
-TotalSupply = \sum_{i=1}^{E}(C \cdot S \cdot R^{i-1})
+TotalSupply = \sum_{i=1}^{E}(C \cdot T_0 \cdot f^{i-1})=C \cdot T_0 \cdot \frac{1-f^E}{1-f}
 ```
 
-**Example:** $E$=15, $C$=10, $S$=100,000 tokens, $R$=0.75
+**Example:** $E$=15, $C$=10, $T_0$=100,000 tokens, $f$=0.75
 
 **The total yield is:** `3,946,546.155959368` tokens
 
 [Click here to open Wolfram calculation](https://www.wolframalpha.com/input?i=sum+10*100000*0.75%5E%28i-1%29%2C+i+%3D+1+to+15), you can use `wolfram` to calculate the total supply easily.
+
+> As $E$ approaches infinity, meaning that mining can continue indefinitely, **TotalSupply** will converge to a value, which is:
+
+```math
+lim_{E→∞}(​C⋅T_0⋅\frac{1-f^E}{1-f})=C⋅T_0⋅\frac{1-f^{∞}}{1-f}=\frac{C⋅T_0}{1-f}
+```
 
 ### 5.2 Estimated Total Minting Time:
 
@@ -451,27 +457,35 @@ The following formula is for calculating the estimated total minting time.
 
 *   $E$: `Total Eras`
 *   $C$: `Epoches per Era`
-*   $B$: `Target blocks per epoch`
+*   $N_t$: `Target Number Of Blocks Per Epoch`
 *   $t$: `Seconds per block`
 
 **Calculation**
 
 ```math
-TotalEstimatedTime = E \cdot C \cdot B \cdot t
+TotalEstimatedTime = E \cdot C \cdot N_t \cdot t
 ```
 
-**Example:** $E$=15, $C$=10, $B$=50, $t$=12 seconds
+**Example:** $E$=15, $C$=10, $N_t$=50, $t$=12 seconds
 
 **The estimated total minting time:** 15 \* 10 \* 50 \* 12 = 90,000 seconds = 25 hours
 
-### 5.3
+> Combining the two formulas above, we can calculate the value of $E_r$ when 80% of the total supply ($r$) of tokens has been minted.
 
-If the target total supply is 21 million, there can be (but not limited to) the following parameter combinations:
+```math
+E_r = \frac{T_0 \cdot r}{N_t \cdot (1-f)}
+```
 
-| $E$  | $C$   | $S$     | $R$    | $B$    | $t$  | Total Supply  | Estimated Minting Days |
-| -- | --- | ----- | ---- | ---- | -- | ------------- | ---------------------- |
-| 13 | 600 | 9000  | 0.75 | 2000 | 12 | 21 million    | 2166.666667            |
-| 11 | 500 | 11000 | 0.75 | 500  | 12 | 21.07 million | 381.9444444            |
+Example: $T_0$=100,000, r=80%, $N_t$=5000, $f$=0.75, then $E_r$=64
+
+### 5.3 Example
+
+If the target total supply is 21 million(around), there can be (but not limited to) the following parameter combinations:
+
+| $C$   | $T_0$     | $f$    | $N_t$    | $t$  | Total Supply  | Eras(95%) | Epoches(95%)| days(95%)|
+| --- | ----- | ---- | ---- | -- | ------------- | ---------------------- |----|----|
+| 600 | 9000  | 0.75 | 2000 | 12 | 21.6 million    | 17.1            |10260|2850|
+| 500 | 11000 | 0.75 | 500  | 12 | 22 million | 83.6            |41800|2902.8
 
 ### 5.4 Mint Size of Genesis Era($M_0$)
 
@@ -479,7 +493,7 @@ It can be calculated through the following 4 parameters:
 
 *   $S$: `Initial target mint size per epoch`
 *   $I$: `Mint interval`
-*   $B$: `Target blocks per epoch`
+*   $N_t$: `Target Number Of Blocks Per Epoch`
 *   $t$: `Seconds per block`
 
 **Calculation**
