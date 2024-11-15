@@ -429,7 +429,7 @@ There are four parameters that determine the total supply:
 *   $E$: `Total Eras`
 *   $C$: `Epoches per Era`
 *   $T_0$: `Initial target mint size per epoch`
-*   $f$: `Reduce factory by era`
+*   $f$: `Reduce factory by era`, $f \in (0,1)$
 
 **Calculation**
 
@@ -473,39 +473,95 @@ TotalEstimatedTime = E \cdot C \cdot N_t \cdot t
 > Combining the two formulas above, we can calculate the value of $E_r$ when 80% of the total supply ($r$) of tokens has been minted.
 
 ```math
-E_r = \frac{T_0 \cdot r}{N_t \cdot (1-f)}
+C \cdot T_0 \cdot \frac{1-f^{E_r}}{1-f} = \frac{C⋅T_0}{1-f}*r
+```
+From this equation, we get:
+```math
+E_r = \log_f(1-r)
 ```
 
-Example: $T_0$=100,000, r=80%, $N_t$=5000, $f$=0.75, then $E_r$=64
+**Example:**
 
-### 5.3 Example
+r=80%, $f$=0.75, then $E_r$=$\log_0.75(1-0.8)=\frac{\ln0.2}{\ln0.75}=5.59$.
 
-If the target total supply is 21 million(around), there can be (but not limited to) the following parameter combinations:
+That means in the middle of the 5th Era, 80% of the total supply will be minted. 
 
-| $C$   | $T_0$     | $f$    | $N_t$    | $t$  | Total Supply  | Eras(95%) | Epoches(95%)| days(95%)|
-| --- | ----- | ---- | ---- | -- | ------------- | ---------------------- |----|----|
-| 600 | 9000  | 0.75 | 2000 | 12 | 21.6 million    | 17.1            |10260|2850|
-| 500 | 11000 | 0.75 | 500  | 12 | 22 million | 83.6            |41800|2902.8
+If $C=10$, on the 56th epoch, 80% of the total supply will be minted.
 
-### 5.4 Mint Size of Genesis Era($M_0$)
+### 5.3 Mint Size of Genesis Era($M_0$)
 
 It can be calculated through the following 4 parameters:
 
-*   $S$: `Initial target mint size per epoch`
-*   $I$: `Mint interval`
+*   $T_0$: `Initial target mint size per epoch`
+*   $I$: `Mint interval(seconds)`, must smaller than $N_t*t$
 *   $N_t$: `Target Number Of Blocks Per Epoch`
 *   $t$: `Seconds per block`
 
 **Calculation**
 
 ```math
-M_0 = \frac{S \cdot I}{B \cdot t}
+M_0 = \frac{T_0 \cdot I}{N_t \cdot t}
 ```
 
 > What would happen if the `Mint Size of Genesis Era` is not calculated according to the above formula but is set to a very large or very small value?
 > As `Epoch` passes, the amount of each minting will eventually converge due to the adjustment of the difficulty coefficient, so this parameter has no long-term impact. However, this setting can be used as a pre-mining for the Genesis block and early blocks.
 
-Note: $M_0$ should not exceed $S$, otherwise, the total supply will be magnified.
+Note: $M_0$ should not exceed $T_0$, otherwise, the total supply will be magnified.
+
+### 5.4 Total Minting Fee
+Each minting requires a fixed fee, however, due to the increase in difficulty, the minting times within the same epoch will increase, and the number of tokens obtained per minting will decrease, thus the total fee will increase accordingly.
+
+> **Note:** These minting fees are added to Liquidity pool automatically.
+
+* $Fee$: Total Fee
+* $P_0$: Minting fee per minting
+* $d$: Difficulty coefficient
+* $Q$: Mint times in an epoch
+* $T_0$: Target mint size per epoch of the Genesis Era
+* $M_0$: Base mint size per minting of the Genesis Era
+* $C_e$: Elapsed epoches
+
+Mint times in an epoch:
+```math
+Q = {\lfloor{\frac{T_0}{M_0}*d}\rfloor + 1}, (T_0 \nmid M_0)
+```
+```math
+Q = \frac{T_0}{M_0}*d, (T_0 \mid M_0)
+```
+For simplicity, let's assume $T_0 \mid M_0$, the total fee:
+```math
+TotalFee = \sum_{i=0}^{C_e}(P_0 \cdot Q_i)=\sum_{i=0}^{C_e}(\frac{P_0 \cdot T_0}{M_0}*d_i)
+```
+As $d_i = d_{i-1} \cdot (1+Δd_i)$, $Δd \in [0,0.01]$ (see. 3.1.1), and $d_0=1$, the total fee range will be:
+```math
+TotalFee \in [\frac{P_0 \cdot T_0}{M_0} \cdot \sum_{i=0}^{C_e}1^i, \frac{P_0 \cdot T_0}{M_0} \cdot \sum_{i=0}^{C_e}1.01^i]
+```
+Simplified:
+```math
+TotalFee \in [\frac{P_0 \cdot T_0}{M_0} \cdot (C_e+1), \frac{P_0 \cdot T_0}{M_0} \cdot 100 \cdot (1.01^{C_e+1}-1)]
+```
+**Example**
+
+$P_0$=1 USD, $T_0$=9000, $M_0$=100, $d$=1.5, $C_e$=300, Minimum total fee is $27,090, and max is $170,877.
+
+This indicates that if minting is done quickly, the actual minting time in epoch ($N_e$) is less than the target time($N_t$), it will lead to a continuous increase in difficulty and mint cost. Consequently, the total fees collected will be `6.3` times higher than if the difficulty remained constant, and the difference becomes more significant as the epoch number increases.
+
+### 5.5 Use cases
+
+If the target total supply is 21 million(around), there can be (but not limited to) the following parameter combinations:
+
+| $C$   | $T_0$     | $f$    | $N_t$    | $t$  | Total Supply  | Eras(95%) | Epoches(95%)| Days(95%)|I|$M_0$|Total Fee(min)|Total Fee(max)|
+| --- | ----- | ---- | ---- | -- | ------------- | ---------------------- |----|----|----|----|----|----|
+| 600 | 9000  | 0.75 | 2000 | 12 | 21.6 million    | 10.413|6248|1735.56|2000|750|74,988|1.21e30|
+| 500 | 11000 | 0.75 | 500  | 12 | 22 million | 10.413|5206|361.57|500|916.67|62,484|3.8e25|
+|2500|1000|0.75|1000|0.4|10 million|10.413|26032|120.5|50|125|208,264|2.52e115|
+
+**Note:**
+* $Eras = \log_f(1-0.95)$
+* $Epoches = Eras * C$
+* $days = Epoches * N_t * t / 3600 / 24$ = $log_f(1-0.95) * C * N_t * t / 86400$
+* As the $f$, $t$ are fixed, the total days is depent on $C$ and $N_t$
+
 
 ## 6. Attacks prevention
 
