@@ -1,6 +1,6 @@
 Copyright by Fair Launch Labs(F.L.L.)
 
-Nov.6, 2024
+Version 0.3.0 @Nov.6, 2024
 
 # A new proposal of distributing tokens on blockchain: Proof of Mint
 
@@ -488,7 +488,7 @@ That means in the middle of the 5th Era, 80% of the total supply will be minted.
 
 If $C=10$, on the 56th epoch, 80% of the total supply will be minted.
 
-### 5.3 Mint Size of Genesis Era($M_0$)
+### 5.3 Base Mint Size of Genesis Era($M_0$)
 
 It can be calculated through the following 4 parameters:
 
