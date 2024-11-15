@@ -392,35 +392,9 @@ fn get_mint_size(config_data: &ConfigData, era: u32, elapsed_seconds_epoch: i64,
 }
 ```
 
-## 4. Testing and Evaluation
+## 4. Deployment Parameter
 
-Below are the parameters for the simulation test:
-
-*   Minting interval time range: Randomly between 0-30 seconds
-*   Total number of Eras: 10
-*   Number of Epochs per Era: 20
-*   Minimum difficulty coefficient: 0.2
-*   Reduction coefficient: 3/4
-*   Base mint size per minting in the Genesis Era: 50
-*   Target mint size per Epoch in the Genesis Era: 200
-
-### Minting Rewards
-
-![Epoch Actual Minting Yield vs. Target Minting Yield](https://live.staticflickr.com/65535/54094776890_503884aecf_o.png)
-The orange line is the `actual mint size of the current Epoch`, and the blue line represents the `target mint size per minting`, showing a trend of a 25% reduction per Era.
-
-![Actual Minting Reward vs. Target Minting Reward](https://live.staticflickr.com/65535/54095066420_d4262b9e5e_o.png)
-The orange line is the `actual mint size`, and the blue line is the `target mint size`.
-
-![Total Minting Curve](https://live.staticflickr.com/65535/54095071645_b6b807f7e9_o.png)
-Total minting volume.
-
-![Simulation Results on Ethereum Chain](https://live.staticflickr.com/65535/54094891458_1a1e5df73a_o.png)
-The above are simulation results on the Ethereum chain.
-
-## 5. Deployment Parameter
-
-### 5.1 Total Supply
+### 4.1 Total Supply
 
 The total supply of PoM scheme is different from the manual setting of the total supply of many tokens. It is calculated based on `Era`, `Epoch`, and the `reduction factor`.
 
@@ -449,7 +423,7 @@ TotalSupply = \sum_{i=1}^{E}(C \cdot T_0 \cdot f^{i-1})=C \cdot T_0 \cdot \frac{
 lim_{E→∞}(​C⋅T_0⋅\frac{1-f^E}{1-f})=C⋅T_0⋅\frac{1-f^{∞}}{1-f}=\frac{C⋅T_0}{1-f}
 ```
 
-### 5.2 Estimated Total Minting Time:
+### 4.2 Estimated Total Minting Time:
 
 **Note:** The actual total minting time will differ from the estimated total minting time.
 
@@ -488,27 +462,7 @@ That means in the middle of the 5th Era, 80% of the total supply will be minted.
 
 If $C=10$, on the 56th epoch, 80% of the total supply will be minted.
 
-### 5.3 Base Mint Size of Genesis Era($M_0$)
-
-It can be calculated through the following 4 parameters:
-
-*   $T_0$: `Initial target mint size per epoch`
-*   $I$: `Mint interval(seconds)`, must smaller than $N_t*t$
-*   $N_t$: `Target Number Of Blocks Per Epoch`
-*   $t$: `Seconds per block`
-
-**Calculation**
-
-```math
-M_0 = \frac{T_0 \cdot I}{N_t \cdot t}
-```
-
-> What would happen if the `Mint Size of Genesis Era` is not calculated according to the above formula but is set to a very large or very small value?
-> As `Epoch` passes, the amount of each minting will eventually converge due to the adjustment of the difficulty coefficient, so this parameter has no long-term impact. However, this setting can be used as a pre-mining for the Genesis block and early blocks.
-
-Note: $M_0$ should not exceed $T_0$, otherwise, the total supply will be magnified.
-
-### 5.4 Total Minting Fee
+### 4.3 Total Minting Fee
 Each minting requires a fixed fee, however, due to the increase in difficulty, the minting times within the same epoch will increase, and the number of tokens obtained per minting will decrease, thus the total fee will increase accordingly.
 
 > **Note:** These minting fees are added to Liquidity pool automatically.
@@ -546,21 +500,85 @@ $P_0$=1 USD, $T_0$=9000, $M_0$=100, $d$=1.5, $C_e$=300, Minimum total fee is $27
 
 This indicates that if minting is done quickly, the actual minting time in epoch ($N_e$) is less than the target time($N_t$), it will lead to a continuous increase in difficulty and mint cost. Consequently, the total fees collected will be `6.3` times higher than if the difficulty remained constant, and the difference becomes more significant as the epoch number increases.
 
-### 5.5 Use cases
+### 4.4 Use cases
 
+#### 4.4.1
 If the target total supply is 21 million(around), there can be (but not limited to) the following parameter combinations:
 
-| $C$   | $T_0$     | $f$    | $N_t$    | $t$  | Total Supply  | Eras(95%) | Epoches(95%)| Days(95%)|I|$M_0$|Total Fee(min)|Total Fee(max)|
-| --- | ----- | ---- | ---- | -- | ------------- | ---------------------- |----|----|----|----|----|----|
-| 600 | 9000  | 0.75 | 2000 | 12 | 21.6 million    | 10.413|6248|1735.56|2000|750|74,988|1.21e30|
-| 500 | 11000 | 0.75 | 500  | 12 | 22 million | 10.413|5206|361.57|500|916.67|62,484|3.8e25|
-|2500|1000|0.75|1000|0.4|10 million|10.413|26032|120.5|50|125|208,264|2.52e115|
+| $C$   | $T_0$  |$M_0$   | $f$    | $N_t$    | $t$  | Total Supply  | Eras(95%) | Epoches(95%)| Days(95%)|Total Fee(min)|Total Fee(max)|
+| --- | ----- | ---- | ---- | -- | ------------- | ---------------------- |----|----|----|----|----|
+| 600 | 9000 | 1000   | 0.75 | 2000 | 12 | 21.6 million    | 10.413|6248|1735.56|56,241|9.088e29|
+| 500 | 11000 | 1000   | 0.75 | 500  | 12 | 22 million | 10.413|5206|361.57|57,277|3.49e25|
+|2500|1000| 100  |0.75|1000|0.4|10 million|10.413|26032|120.5|260,320|3.15e115|
 
 **Note:**
 * $Eras = \log_f(1-0.95)$
 * $Epoches = Eras * C$
 * $days = Epoches * N_t * t / 3600 / 24$ = $log_f(1-0.95) * C * N_t * t / 86400$
 * As the $f$, $t$ are fixed, the total days is depent on $C$ and $N_t$
+
+#### 4.4.2 How to calculate all parameters
+We will try to calculate all parameters according to the following conditions:
+
+* Total Supply
+* Target minting days
+* Minimum total fee collected
+
+The constants are:
+* Total Supply: 10,000,000
+* Total minting days: 180 days, 95% of the total supply will be minted
+* Taget minting fee: 30,000 USDT
+* $f = 0.75$
+* $T_0 = 10,000$
+* $M_0 = 1,000$
+* $t=0.4$ seconds(Solana链的每个区块时间)
+
+1- $\because TotalSupply = \frac{C⋅T_0}{1-f}$, so: $C=10,000,000*(1-0.75)/10000=250$。
+
+2- From the following formula, we can get $N_t = 14935$
+```math
+C * N_t * t * \log_f(1-0.95) = 180 days * 86400 seconds/day
+```
+
+3- From the Following formula, we can get $C_e = 2603$
+```math
+C_e = Eras * C = log_f(1-0.95) * C = 10.413 * 250 = 2603
+```
+
+4- We already know: $T_0=10,000$, $C_e=2603$, $M_0=1000$, the minimum total fee formula:
+
+```math
+\frac{P_0 * T_0 * (C_e+1)}{M_0} = P_0 * 10,000 * 2604 / 1000 = 300,000
+```
+According the minimum total fee formula, we can get $P_0 = 11.52$USDT, which means the lowest price of each token is $P_0 / M_0 = 11.52 / 1000 = 0.01152$USDT
+
+[Click here to open online calculator](https://docs.google.com/spreadsheets/d/1z4eO1k14noxTMcgADMc-I0xFXT0giMFPSBEGal4suvI/edit?usp=sharing)
+
+## 5. Testing and Evaluation
+
+Below are the parameters for the simulation test:
+
+*   Minting interval time range: Randomly between 0-30 seconds
+*   Total number of Eras: 10
+*   Number of Epochs per Era: 20
+*   Minimum difficulty coefficient: 0.2
+*   Reduction coefficient: 3/4
+*   Base mint size per minting in the Genesis Era: 50
+*   Target mint size per Epoch in the Genesis Era: 200
+
+### Minting Rewards
+
+![Epoch Actual Minting Yield vs. Target Minting Yield](https://live.staticflickr.com/65535/54094776890_503884aecf_o.png)
+The orange line is the `actual mint size of the current Epoch`, and the blue line represents the `target mint size per minting`, showing a trend of a 25% reduction per Era.
+
+![Actual Minting Reward vs. Target Minting Reward](https://live.staticflickr.com/65535/54095066420_d4262b9e5e_o.png)
+The orange line is the `actual mint size`, and the blue line is the `target mint size`.
+
+![Total Minting Curve](https://live.staticflickr.com/65535/54095071645_b6b807f7e9_o.png)
+Total minting volume.
+
+![Simulation Results on Ethereum Chain](https://live.staticflickr.com/65535/54094891458_1a1e5df73a_o.png)
+The above are simulation results on the Ethereum chain.
 
 
 ## 6. Attacks prevention
