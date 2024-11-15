@@ -1,6 +1,6 @@
 Copyright by Fair Launch Labs(F.L.L.)
 
-Version 0.3.0 @Nov.6, 2024
+Version 0.4.0 @Nov.6, 2024
 
 # A new proposal of distributing tokens on blockchain: Proof of Mint
 
