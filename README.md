@@ -624,12 +624,23 @@ Discount is decided by the ratio of the balance of code sharers to the total sup
 | > 1% | 25% |
 
 #### 6.2.2 - Minting Fee after discount
-* $P_0$: Original minting
+* $Fee$: Minting fee after discount
+* $P_0$: Original minting fee
+* $p_0$: Price of minted token for the first Epoch
+* $p$: Price of minted token before discount
 * $d$: Difficulty coefficient
 * $k$: The discount rate
 
 ```math
-MintFee = P_0 \cdot (1 + \frac{k}{d} - k), , (d \geq 1, k \leq 0.25)
+\frac{Fee}{M_b} \cdot d = p_0 + (p - p_0) \cdot (1 - k) = p \cdot (1 - k) + p_0 \cdot k
+```
+
+```math
+p = \frac{P_0}{M_b} \cdot d, p_0 = \frac{P_0}{M_b}
+```
+From aboved equivalent formula, we can get the minting fee after discount:
+```math
+Fee = P_0 \cdot (1 + \frac{k}{d} - k), , (d \geq 1, k \leq 0.25)
 ```
 
 **Example:**
