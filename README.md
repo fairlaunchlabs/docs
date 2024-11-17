@@ -429,7 +429,7 @@ lim_{E→∞}(​C⋅T_0⋅\frac{1-f^E}{1-f})=C⋅T_0⋅\frac{1-f^{∞}}{1-f}=\f
 
 The following formula is for calculating the estimated total minting time.
 
-*   $E$: `Total Eras`
+*   $E$: `Eras`
 *   $C$: `Epoches per Era`
 *   $N_t$: `Target Number Of Blocks Per Epoch`
 *   $t$: `Seconds per block`
@@ -456,7 +456,7 @@ E_r = \log_f(1-r)
 
 **Example:**
 
-r=80%, $f$=0.75, then $E_r$=$\log_0.75(1-0.8)=\frac{\ln0.2}{\ln0.75}=5.59$.
+r=80%, $f$=0.75, then $E_r$=$\log_{0.75}(1-0.8)=\frac{\ln0.2}{\ln0.75}=5.59$.
 
 That means in the middle of the 5th Era, 80% of the total supply will be minted. 
 
@@ -580,23 +580,136 @@ Total minting volume.
 ![Simulation Results on Ethereum Chain](https://live.staticflickr.com/65535/54094891458_1a1e5df73a_o.png)
 The above are simulation results on the Ethereum chain.
 
+## 6. Affiliate minting program
+### 6.1 - Description
+The **Affiliate Minting Program** (**AMP**) allows each user to generate an **Unique Referral Code** (**URC**) and share it with others. When others use this **URC** to mint, they can get a discount on the minting fees, and the referrer can get some rewards. **AMP** is designed to be decentralized and community-driven, incentive for building bettercommunity.
 
-## 6. Attacks prevention
+1. Decentralization and Community Driven
+   * All minting must use an **URC**, that every minting is associated with a member of the community.
+   * The progress and speed of minting are influenced by the community members in sharing **URC**, not by the core team or some whales.
+   * Through **AMP**, the community can form a consensus more easily and attract more members to participate in the community.
 
-### 6.1 - Mempool Attacks
+2. Incentivizing Community Building
+   * Dual incentives: Both the Code Sharers (referrer) and the users who uses the **URC** (minter) can benefit, and this dual incentive mechanism helps the growth and activity of the community.
 
-Simulating the result of sending over 200 transactions in a single block:
+3. Mint discount and Rewards for referr
+   * The mint fee discount is linked to the token balance of the account providing the **URC**. The more referrer's balance, the more discount of minting, the less mint fee. That will encouraging participants to hold more tokens rather than selling them all.
+   * **URC** sharers can get stable rewards, this rewards are automatically distributed to the referrer's account by the chain coins(ETH for Ethereum, or SOL for Solana) when the minting is happened.
 
-| height | tx id  | era | epoch | difficulty | elapsed blocks | mint size   | total minted |
-| ------ | ------ | --- | ----- | ---------- | -------------- | ----------- | ------------ |
-| 0      | 1-4    | 1   | 0     | 1          | 0              | 50          | 200          |
-| 1      | 5-12   | 1   | 1     | 1.96667    | 1              | 25.42368572 | 200          |
-| 0      | 13-28  | 1   | 2     | 3.93334    | 0              | 12.71184286 | 200          |
-| 0      | 29-60  | 1   | 3     | 7.86668    | 0              | 6.355921431 | 200          |
-| 0      | 61-120 | 1   | 4     | 14.42229   | 0              | 3.466855818 | 200          |
+4. Minting Fees and Difficulty Adjustment
+   * Dynamic difficulty: The total cost and difficulty of minting will be dynamically adjusted based on the community; the more people mint, the faster the minting speed, the higher the total minting cost, and the higher the extra minting fee.
+   * Part of the minting fees is redistributed as discounts to minters and as rewards to **URC** sharers.
 
-The above test shows that if a user sends mass transactions in the same block and all are confirmed, the minting cost per epoch will double, and the total amount per epoch is limited, in the test case, to 200 units.
+```math
+ExtraMintFee = \frac{P_0 \cdot T_0}{M_0} \cdot (\sum_{i=0}^{C_e}d_i - C_e - 1)
+```
+The formula indicates that the higher $d_i$ is(approximately above 1), the higher the extra minting fee.
 
-### 6.2 - Mint tips
+Since the minting fee goes into the Liquidity Pool to support exchanging in the marketplace, therefore, **AMP** will have a positive impact on community development and token exchanging.
 
-Mempool attacks will lead to increasing mint costs (Gas), but as the Gas fees on the Ethereum chain decrease, this cost may become negligible, so it is possible to pay some ETH as a tip for minting.
+### 6.2 - Calculations
+#### 6.2.1 - Mint discount
+Discount is decided by the ratio of the balance of code sharers to the total supply of tokens.
+
+* $r$: The ratio of the balance of code sharers to the total supply of tokens.
+* $k$: The discount rate.
+
+| $r$ | $k$ |
+| --- | --- |
+| < 0.2% | 0 |
+| 0.2-0.4% | 5% |
+| 0.4-0.6% | 10% |
+| 0.6-0.8% | 15% |
+| 0.8-1% | 20% |
+| > 1% | 25% |
+
+#### 6.2.2 - Minting Fee after discount
+* $P_0$: Original minting
+* $d$: Difficulty coefficient
+* $k$: The discount rate
+
+```math
+MintFee = P_0 \cdot (1 + \frac{k}{d} - k), , (d \geq 1, k \leq 0.25)
+```
+
+**Example:**
+
+$P_0=8$USD, $d=12.3$, $Balance=26,000, $Total Supply = 5,000,000$$
+
+$r = 26,000 / 5,000,000 = 0.52%$, the discount($k$) is 10%.
+
+The minting fee is: $8 * (1 + 0.1 / 12.3 - 0.1) = 7.265$USD
+
+Comparing with the original minting fee, the discount is: $1 - 7.265 / 8 = 9.19$%
+
+**NOTE:** The amount of minted tokens is not changed, see 3.1.4.
+
+#### 6.2.3 - Mint code
+Mint code is a unique code that is generated by the sharer's account and timestamp.
+
+```rust
+// Generate the code by concatenating the Solana address and the current timestamp
+pub fn generate_referral_code(solana_address: &Pubkey, unix_timestamp: u64) -> u64 {
+  let address_u64 = u64::from_le_bytes(solana_address.to_bytes()[..8].try_into().unwrap());
+  let timestamp_u64 = unix_timestamp;
+  (address_u64 << 32) | (timestamp_u64 & 0xFFFFFFFF)
+}
+```
+
+#### 6.2.4 - limitations of mint code
+* The number of times that the code can be used is not unlimited, with a default of 20. That means after **20** mints by this code, the code will be invalid and need the sharer re-activate it.
+
+* Code sharers can not re-activate the code at anytime, there's an interval between each activation. Default interval is **24 hours**.
+
+#### 6.2.5 - Benefits of code sharers
+The code share can got **5%** of the mint fee.
+
+From the previous example, the minting fee is $7.265$USD, the **URC** sharer can get $7.265 * 0.05 = 0.36325$USD. And the balance $6.90175 to the Fee vault.
+
+### 6.3 - Evaluation
+Let's make some change on the formula of minting fee, and see how it affects fee.
+```math
+\frac{MintFee}{P_0} = 1 + \frac{k}{d} - k, (d \geq 1, k \leq 0.25)
+```
+
+#### 6.3.1 - Difficulty($d$) Effects on Minting Fee
+
+As the formula of minting fee, the higher the difficulty is, the lower minting fee and the more discout.
+
+#### 6.3.2 - $k$ Effects on Minting Fee
+As the formula of minting fee, the higher the $k$ is, the lower minting fee and the more discout.
+
+#### 6.3.3 - Risk
+We have to consider one situation that **AMP** probably lead to self-minting(using self **URC** to mint), but we believe that: once a person has a certain number of Tokens, they will prefer to build community and share the Code to others.
+
+Additionally, even if everyone use the maximum discount to mint(which is impossible), the minimum total minting fee would be as follows:
+
+```math
+MintFee = P_0 \cdot lim_{d→∞}(1 + \frac{k}{d} - max(k)) = P_0 \cdot (1-max(k)) = 0.75 P_0
+```
+So, the minimum total minting fee is 75% of the plan. Considering the community activity that **AMP** may bring, and the increase of difficulty will bump the minting fee, this reduction is worthwhile.
+
+### 6.4 - Initialization
+#### 6.4.1 - System Referrer
+Why need for a system/default referrer?
+* All minting requires **URC**, if someone can not obtain an **URC** from community members, he/she can use the default **URC** provided by the system.
+* When using the default **URC**, there is no discount (cause the default referrer's account balance is 0).
+
+
+### 6.5 - Program Implementation
+```rust
+// Calculate the fee value and the referrer reward
+pub fn get_fee_value(fee_rate: u64, difficulty_coefficient: f64, referrer_ata_balance: u64, total_supply: f64, referrer_bonus_rate: f64) -> (f64, f64) {
+  let balance_ratio = referrer_ata_balance as f64 / total_supply;
+  let discount_rate = if balance_ratio < 0.002 {0.0}
+  else if balance_ratio < 0.004 {0.05}
+  else if balance_ratio < 0.006 {0.1}
+  else if balance_ratio < 0.008 {0.15}
+  else if balance_ratio < 0.01 {0.2}
+  else {0.25};
+  let fee = fee_rate as f64 * (1.0 + discount_rate / difficulty_coefficient - discount_rate);
+  (fee as f64, fee * referrer_bonus_rate as f64)
+}
+```
+
+
