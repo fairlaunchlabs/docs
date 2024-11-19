@@ -298,10 +298,6 @@ M = \frac{M_b}{d}
 
 In the example above, the `base mint size per minting` of the current Era is `100 tokens`, and the `difficulty-coefficient` is `2.55`, then the minting reward will be: `100 / 2.55 = 39.216 tokens`.
 
-**Note:**
-
-To prevent the `difficulty-coefficient` from being too small, resulting in an excessively large minting reward, even larger than the `target mint size of epoch` (i.e., minting all the target amount of the current `Epoch` at once), a minimum `difficulty-coefficient` of `0.2` is set. At the same time, to prevent the above situation, when initializing the system parameters, it is necessary to ensure: $M_b$  < $T$ / 5.
-
 #### 3.1.5
 
 If the $T$ is not an integer multiple of $M$, adjustments need to be made to the $M$, that is:
@@ -400,10 +396,10 @@ The total supply of PoM scheme is different from the manual setting of the total
 
 There are four parameters that determine the total supply:
 
-*   $E$: `Total Eras`
-*   $C$: `Epoches per Era`
-*   $T_0$: `Initial target mint size per epoch`
-*   $f$: `Reduce factory by era`, $f \in (0,1)$
+*   $E$: Total Eras
+*   $C$: Epoches per Era
+*   $T_0$: Initial target mint size per epoch
+*   $f$: Reduce factory by era, $f \in (0,1)$
 
 **Calculation**
 
@@ -429,10 +425,10 @@ lim_{E→∞}(​C⋅T_0⋅\frac{1-f^E}{1-f})=C⋅T_0⋅\frac{1-f^{∞}}{1-f}=\f
 
 The following formula is for calculating the estimated total minting time.
 
-*   $E$: `Eras`
-*   $C$: `Epoches per Era`
-*   $N_t$: `Target Number Of Blocks Per Epoch`
-*   $t$: `Seconds per block`
+*   $E$: Eras
+*   $C$: Epoches per Era
+*   $N_t$: Target Number Of Blocks Per Epoch
+*   $t$: Seconds per block
 
 **Calculation**
 
@@ -473,7 +469,7 @@ Each minting requires a fixed fee, however, due to the increase in difficulty, t
 * $Q$: Mint times in an epoch
 * $T_0$: Target mint size per epoch of the Genesis Era
 * $M_0$: Base mint size per minting of the Genesis Era
-* $C_e$: Elapsed epoches
+* $C_e$: Elapsed epoches, $C_e = E * C$
 
 Mint times in an epoch:
 ```math
@@ -496,7 +492,7 @@ TotalFee \in [\frac{P_0 \cdot T_0}{M_0} \cdot (C_e+1), \frac{P_0 \cdot T_0}{M_0}
 ```
 **Example**
 
-$P_0$=1 USD, $T_0$=9000, $M_0$=100, $d$=1.5, $C_e$=300, Minimum total fee is $27,090, and max is $170,877.
+$P_0=1$ USD, $T_0=9000$, $M_0=100$, $d=1.5$, $C_e=300$, Minimum total fee is $27,090, and max is $170,877.
 
 This indicates that if minting is done quickly, the actual minting time in epoch ($N_e$) is less than the target time($N_t$), it will lead to a continuous increase in difficulty and mint cost. Consequently, the total fees collected will be `6.3` times higher than if the difficulty remained constant, and the difference becomes more significant as the epoch number increases.
 
@@ -527,7 +523,7 @@ We will try to calculate all parameters according to the following conditions:
 The constants are:
 * Total Supply: 10,000,000
 * Total minting days: 180 days, 95% of the total supply will be minted
-* Taget minting fee: 30,000 USDT
+* Taget minting fee: 30,000 USD
 * $f = 0.75$
 * $T_0 = 10,000$
 * $M_0 = 1,000$
@@ -550,7 +546,7 @@ C_e = Eras * C = log_f(1-0.95) * C = 10.413 * 250 = 2603
 ```math
 \frac{P_0 * T_0 * (C_e+1)}{M_0} = P_0 * 10,000 * 2604 / 1000 = 300,000
 ```
-According the minimum total fee formula, we can get $P_0 = 11.52$USDT, which means the lowest price of each token is $P_0 / M_0 = 11.52 / 1000 = 0.01152$USDT
+According the minimum total fee formula, we can get $P_0 = 11.52$ USD, which means the lowest price of each token is $P_0 / M_0 = 11.52 / 1000 = 0.01152$ USD
 
 [Click here to open online calculator](https://docs.google.com/spreadsheets/d/1z4eO1k14noxTMcgADMc-I0xFXT0giMFPSBEGal4suvI/edit?usp=sharing)
 
@@ -640,16 +636,16 @@ p = \frac{P_0}{M_b} \cdot d, p_0 = \frac{P_0}{M_b}
 ```
 From aboved equivalent formula, we can get the minting fee after discount:
 ```math
-Fee = P_0 \cdot (1 + \frac{k}{d} - k), , (d \geq 1, k \leq 0.25)
+Fee = P_0 \cdot (1 + \frac{k}{d} - k),  (d \geq 1, k \leq 0.25)
 ```
 
 **Example:**
 
-$P_0=8$USD, $d=12.3$, $Balance=26,000, $Total Supply = 5,000,000$$
+$P_0=8$ USD, $d=12.3$, $Balance=26,000, $Total Supply = 5,000,000$$
 
 $r = 26,000 / 5,000,000 = 0.52%$, the discount($k$) is 10%.
 
-The minting fee is: $8 * (1 + 0.1 / 12.3 - 0.1) = 7.265$USD
+The minting fee is: $8 * (1 + 0.1 / 12.3 - 0.1) = 7.265$ USD
 
 Comparing with the original minting fee, the discount is: $1 - 7.265 / 8 = 9.19$%
 
@@ -675,7 +671,7 @@ pub fn generate_referral_code(solana_address: &Pubkey, unix_timestamp: u64) -> u
 #### 6.2.5 - Benefits of code sharers
 The code share can got **5%** of the mint fee.
 
-From the previous example, the minting fee is $7.265$USD, the **URC** sharer can get $7.265 * 0.05 = 0.36325$USD. And the balance $6.90175 to the Fee vault.
+From the previous example, the minting fee is $7.265$ USD, the **URC** sharer can get $7.265 * 0.05 = 0.36325$ USD. And the balance $6.90175 to the Fee vault.
 
 ### 6.3 - Evaluation
 Let's make some change on the formula of minting fee, and see how it affects fee.
@@ -696,7 +692,7 @@ We have to consider one situation that **AMP** probably lead to self-minting(usi
 Additionally, even if everyone use the maximum discount to mint(which is impossible), the minimum total minting fee would be as follows:
 
 ```math
-MintFee = P_0 \cdot lim_{d→∞}(1 + \frac{k}{d} - max(k)) = P_0 \cdot (1-max(k)) = 0.75 P_0
+MintFee = P_0 \cdot lim_{d→∞}[1 + \frac{k}{d} - max(k)] = P_0 \cdot (1-max(k)) = 0.75 P_0
 ```
 So, the minimum total minting fee is 75% of the plan. Considering the community activity that **AMP** may bring, and the increase of difficulty will bump the minting fee, this reduction is worthwhile.
 
@@ -723,4 +719,125 @@ pub fn get_fee_value(fee_rate: u64, difficulty_coefficient: f64, referrer_ata_ba
 }
 ```
 
+## 7 - Liquidity
+The minting fee will ultimately be injected into the liquidity pool of the Decentralized Exchange, where transaction fees can be earned.
 
+### 7.1 - Tokens for the Liquidity Pool
+A portion of the total Token supply will be allocated to the liquidity pool as SOL/Token pair. This allocation is distributed into a dedicated liquidity account during minting. Once certain conditions are met(Ex. Era#1 is done), these Tokens, along with transaction fees(SOL), are added into the liquidity pool automatically.
+
+* $M_a$: The number of Tokens minted per instance (see 3.1.4, 3.1.4)
+* $r_l$: The proportion of the initial liquidity pool relative to the total issuance, where $r_l < 1$
+* $L$: The number of Tokens entering the liquidity-specific account per minting event
+
+```math
+L = \frac{M_a \cdot r_l}{1 - r_l}
+```
+
+Cause the total supply of tokens:
+```math
+TotalSupply = \sum_{i=1}^{E}(C \cdot T_0 \cdot \frac{1-f^{E}}{1-f})=C \cdot T_0 \cdot \frac{1-f^{E}}{1-f}
+```
+
+The tokens for initializing Liquidity pool:
+
+```math
+InitLiquidity = TotalSupply * \frac{r_l}{1-r_l} = C \cdot T_0 \cdot r_l \cdot \frac{1-f^{E}}{(1-f) \cdot (1-r_l)}
+```
+
+### 7.2 - Minting Fees
+The minting fee is described in section 6.2.2. The distribution of the minting fee is as follows:
+
+* URC supplier : 5%
+* Protocal : 4.75%
+* Liquidity Pool : 90.25%
+
+
+```mermaid
+%%{init: {"pie": {"textPosition": 0.75}, "themeVariables": {"pieOuterStrokeWidth": "5px"}} }%%
+pie title Minting Fees Allocation
+    "URC supplier" : 5.00
+    "Protocal" : 4.75
+    "Liquidity Pool" : 90.25
+```
+
+### 7.3 - Estimated Price at Liquidity Pool Initialization
+According to the **AMM** of Decentralized Exchanger, the token price at the time of initializing the liquidity pool is:
+
+```math
+Price = \frac{0.9025 \cdot TotalFee}{InitLiquidity}
+```
+
+As the total mint fee is a range:
+```math
+TotalFee \in [\frac{P_0 \cdot T_0}{M_0} \cdot (C_e+1), \frac{P_0 \cdot T_0}{M_0} \cdot 100 \cdot (1.01^{C_e+1}-1)]
+```
+So, the lowest price when initializing the Liquidity Pool will be:
+```math
+P_{low} = \frac{P_0 \cdot (C_e+1)(1-r_l)(1-f)}{M_0 \cdot C \cdot r_l \cdot (1-f^E)}*0.9025
+```
+
+And the highest price will be:
+```math
+P_{high} = \frac{100 \cdot P_0 \cdot (1.01^{C_e+1}-1)(1-r_l)(1-f)}{M_0 \cdot C \cdot r_l \cdot (1-f^E)}*0.9025=\frac{100 \cdot (1.01^{C_e+1}-1)}{C_e+1} \cdot P_{low}
+```
+
+In the aboved formula, $C_e = E \cdot C$ ($C$ is Epoches per Era, $E$ is Eras)
+
+## 8 - Complete Case Study
+The following is a comprehensive case study demonstrating the deployment of the Proof of Mint（PoM) mechanism on **Solana** blockchain
+
+### 8.1 - Parameters
+* Total supply: 1,000,000,000 tokens
+* Target mint size per minting for 1st Era($M_0$): 10,000 tokens
+* Target mint size per epoch for 1st Era($T_0$): 1,000,000 tokens
+* Minimum minting instances per Epoch: 100
+* Target Era($E$): 1, after the first Era is completed, holders can transfer tokens and the liquidity pool is initialized.
+* Epoches per ear($C$): 250
+* Target minting days: 30 days
+* Reduction factor($f$): 0.75
+* Tokens percentage for Liquidity($r_l$): 10%
+* Fee per minting($P_0$): 2 USD per minting (0.0002USD/token)
+* Target minting time per Epoch: 173 minutes (around 3 hours)
+* How to handle of LP tokens generated when initializing the liquidity pool: **All destroyed**
+
+* Upon reaching Target Era#1:
+  * Total Supply: 250,000,000 tokens (25% of max supply)
+  * Total number of Epochs: 250
+  * Number of minting: >= 25,000
+  * Total minting fee: 50,200 USD to 223,050 USD
+  * Price at the time of initializing the liquidity pool: 0.001807 USD to 0.008030 USD
+
+
+
+### 8.2 - Mint workflow(Technically)
+```mermaid
+graph TD;
+    S([Start Minting])-->A[Get Unique Referral Code - URC];
+    A-->B[Check URC availability];
+    B-->C[URC is unavailable];
+    C-->E[Referrer reactivates the URC];
+    B-->D[Get mint size according to the Difficulty Curve];
+    D-->F[Get discount rate according to referrer's balance];
+    F-->G[Mint tokens with discount];
+    G-->G1[5% rewards to referrer];
+    G-->H[If Era = 1];
+    H-->I[Freeze the miners' account];
+    H-->J[Initialize the liquidity pool];
+    J-->K[Thaw miners' account];
+    K-->N
+    I-->L[Mint tokens to Liquidity Vault];
+    L-->M[Increase the URC usage count];
+    M-->N([End]);
+```
+
+### 8.3 - Initialize the liquidity pool workflow (Technically)
+Anyone can initialize the liquidity, the only condition is Era > 1.
+```mermaid
+graph TD;
+  A[Check if Era > 1]-->B[Era=1];
+  B-->C([End]);
+  B-->D[Add Liquidity];
+  D-->E[Burn the liquidity Provider's tokens];
+  E-->F[Send protocol fee];
+  F-->G([End]);
+```
