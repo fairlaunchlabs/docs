@@ -768,18 +768,9 @@ InitLiquidity = TotalSupply * \frac{r_l}{1-r_l} = C \cdot T_0 \cdot r_l \cdot \f
 ### 7.2 - Minting Fees
 The minting fee is described in section 6.2.2. The distribution of the minting fee is as follows:
 
-* URC supplier : 5%
+* URC supplier : 0-5%
 * Protocal : 4.75%
-* Liquidity Pool : 90.25%
-
-
-```mermaid
-%%{init: {"pie": {"textPosition": 0.75}, "themeVariables": {"pieOuterStrokeWidth": "5px"}} }%%
-pie title Minting Fees Allocation
-    "URC supplier" : 5.00
-    "Protocal" : 4.75
-    "Liquidity Pool" : 90.25
-```
+* Liquidity Pool : 90.25-95.25%
 
 ### 7.3 - Estimated Price at Liquidity Pool Initialization
 According to the **AMM** of Decentralized Exchanger, the token price at the time of initializing the liquidity pool is:
