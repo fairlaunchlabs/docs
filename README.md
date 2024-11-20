@@ -1,3 +1,8 @@
+---
+classoption:
+- twocolumn
+---
+
 Copyright by Fair Launch Labs(F.L.L.)
 
 Version 0.4.0 @Nov.6, 2024
@@ -196,7 +201,7 @@ If `Bots` participate in the minting, they will find that the faster the minting
 If `Bots` monitor the minting time of the previous `Epoch` to calculate the difficulty of the next `Epoch` and valuate whether to participate or not, then all Bots must have their own strategies. Otherwise, convergent strategies will lead to all Bots crowding and causing a significant decrease in yield and a substantial increase in costs. Because the yield of Bots do not depend on the "speed" of minting, but more on the "guesswork" of the behavior of other Bots, greatly increasing the strategic difficulty for Bots.
 
 #### 2.4.3- Benefit 3
-Adopting a mechanism where difficulty only increases and never decreases (similar to Bitcoin mining) ensures that the expected mining cost is always on the rise. When the difficulty increases rapidly, users will not anticipate a decrease in difficulty, either continuing to mint or stopping minting. This avoids the halt in minting that can occur when waiting for the difficulty to drop.
+Adopting a mechanism where difficulty only increases and never decreases ensures that the expected mining cost is always on the rise. When the difficulty increases rapidly, users will not anticipate a decrease in difficulty, either continuing to mint or stopping minting. This avoids the halt in minting that can occur when waiting for the difficulty to drop.
 
 #### 2.4.4- Benefit 4
 As the difficulty and mining cost increases, until the market deems the cost to have reached a reasonable level, at which point minting will slow down or stop. The mining cost at this time will be an Anchor of the market price of tokens.
@@ -639,6 +644,15 @@ From aboved equivalent formula, we can get the minting fee after discount:
 Fee = P_0 \cdot (1 + \frac{k}{d} - k),  (d \geq 1, k \leq 0.25)
 ```
 
+The balance between $Fee$ and original $P_0$ is:
+```math
+P_0 - Fee = P_0 - P_0 \cdot (1 + \frac{k}{d} - k) = P_0 \cdot k \cdot (1 - \frac{1}{d})
+```
+The discount rate is:
+```math
+\frac{P_0-Fee}{P_0} =k \cdot (1 - \frac{1}{d})
+```
+
 **Example:**
 
 $P_0=8$ USD, $d=12.3$, $Balance=26,000, $Total Supply = 5,000,000$$
@@ -669,9 +683,19 @@ pub fn generate_referral_code(solana_address: &Pubkey, unix_timestamp: u64) -> u
 * Code sharers can not re-activate the code at anytime, there's an interval between each activation. Default interval is **24 hours**.
 
 #### 6.2.5 - Benefits of code sharers
-The code share can got **5%** of the mint fee.
+The code sharer can got 20% of the balance fee the miner saved.
+```math
+CodeSharerReward = 0.2 \cdot (P_0 - Fee) = 0.2 \cdot P_0 \cdot k \cdot (1 - \frac{1}{d})
+```
+The higher the difficulty, the larger the $k$, the greater the benefits for the Code Sharer.
 
-From the previous example, the minting fee is $7.265$ USD, the **URC** sharer can get $7.265 * 0.05 = 0.36325$ USD. And the balance $6.90175 to the Fee vault.
+Because $max(k)$ = 25%, when $d = ∞$, Code Sharer receives 5% of $P_0$.
+
+**Example:**
+
+From the previous example, the reward for code sharer is:
+
+$0.2 * 8 * 0.10 * (1 - 1/12.3) = 0.147$ USD
 
 ### 6.3 - Evaluation
 Let's make some change on the formula of minting fee, and see how it affects fee.
@@ -706,7 +730,7 @@ Why need for a system/default referrer?
 ### 6.5 - Program Implementation
 ```rust
 // Calculate the fee value and the referrer reward
-pub fn get_fee_value(fee_rate: u64, difficulty_coefficient: f64, referrer_ata_balance: u64, total_supply: f64, referrer_bonus_rate: f64) -> (f64, f64) {
+pub fn get_fee_value(fee_rate: u64, difficulty_coefficient: f64, referrer_ata_balance: u64, total_supply: f64) -> (f64, f64) {
   let balance_ratio = referrer_ata_balance as f64 / total_supply;
   let discount_rate = if balance_ratio < 0.002 {0.0}
   else if balance_ratio < 0.004 {0.05}
@@ -715,7 +739,8 @@ pub fn get_fee_value(fee_rate: u64, difficulty_coefficient: f64, referrer_ata_ba
   else if balance_ratio < 0.01 {0.2}
   else {0.25};
   let fee = fee_rate as f64 * (1.0 + discount_rate / difficulty_coefficient - discount_rate);
-  (fee as f64, fee * referrer_bonus_rate as f64)
+  let code_sharer_reward = 0.2 * fee_rate as f64 * discount_rate * (1.0 - 1.0 / difficulty_coefficient);
+  (fee as f64, code_sharer_reward)
 }
 ```
 
