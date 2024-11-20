@@ -1,7 +1,3 @@
----
-classoption:
-- twocolumn
----
 
 Copyright by Fair Launch Labs(F.L.L.)
 
