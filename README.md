@@ -455,7 +455,7 @@ E_r = \log_f(1-r)
 
 r=80%, $f$=0.75, then $E_r$=$\log_{0.75}(1-0.8)=\frac{\ln0.2}{\ln0.75}=5.59$.
 
-That means in the middle of the 5th Era, 80% of the total supply will be minted. 
+That means in the middle of the 5th Era, 80% of the total supply will be minted.
 
 If $C=10$, on the 56th epoch, 80% of the total supply will be minted.
 
